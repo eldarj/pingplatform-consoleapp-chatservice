@@ -5,6 +5,14 @@ VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatMicroservice", "ChatMicroservice\ChatMicroservice.csproj", "{DA06FFFA-7FD4-4923-A1C9-89AFBEB094A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatMicroservice.Data", "ChatMicroservice.Data\ChatMicroservice.Data.csproj", "{0F806C36-53A5-4E28-9821-79CC8ADAF21B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.Dtos", "..\..\api\api-gateway\Ping.Commons.Dtos\Ping.Commons.Dtos.csproj", "{C8B937D4-3B19-4F58-B4CE-2251B4177669}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatMicroservice.SignalR", "ChatMicroservice.SignalR\ChatMicroservice.SignalR.csproj", "{A414CC8E-3EC0-4024-BF14-F5DB3FFB05C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatMicroservice.RabbitMQ", "ChatMicroservice.RabbitMQ\ChatMicroservice.RabbitMQ.csproj", "{06073FE9-A94F-4E5F-9F6A-F25D0B3610DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,22 @@ Global
 		{DA06FFFA-7FD4-4923-A1C9-89AFBEB094A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA06FFFA-7FD4-4923-A1C9-89AFBEB094A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA06FFFA-7FD4-4923-A1C9-89AFBEB094A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F806C36-53A5-4E28-9821-79CC8ADAF21B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F806C36-53A5-4E28-9821-79CC8ADAF21B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F806C36-53A5-4E28-9821-79CC8ADAF21B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F806C36-53A5-4E28-9821-79CC8ADAF21B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8B937D4-3B19-4F58-B4CE-2251B4177669}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8B937D4-3B19-4F58-B4CE-2251B4177669}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8B937D4-3B19-4F58-B4CE-2251B4177669}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8B937D4-3B19-4F58-B4CE-2251B4177669}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A414CC8E-3EC0-4024-BF14-F5DB3FFB05C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A414CC8E-3EC0-4024-BF14-F5DB3FFB05C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A414CC8E-3EC0-4024-BF14-F5DB3FFB05C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A414CC8E-3EC0-4024-BF14-F5DB3FFB05C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06073FE9-A94F-4E5F-9F6A-F25D0B3610DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06073FE9-A94F-4E5F-9F6A-F25D0B3610DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06073FE9-A94F-4E5F-9F6A-F25D0B3610DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06073FE9-A94F-4E5F-9F6A-F25D0B3610DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
