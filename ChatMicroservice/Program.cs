@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.FileProviders;
 using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers;
+using ChatMicroservice.Data.Services.Interfaces;
 
 namespace ChatMicroservice
 {
@@ -22,6 +23,8 @@ namespace ChatMicroservice
     {
         public static async Task Main(string[] args)
         {
+            Console.WriteLine("::ChatMicroservice::");
+
             var host = new HostBuilder()
                 .ConfigureHostConfiguration(configHost =>
                 {
@@ -44,23 +47,19 @@ namespace ChatMicroservice
                     //);
                     services.AddDbContext<MyDbContext>();
 
+                    services.AddScoped<IAccountService, AccountService>();
+
                     services.AddHostedService<SignalRClientService>();
-
-                    IAccountMQConsumer mqConsumer = new AccountMQConsumer();
-                    mqConsumer.ConsumeMessages();
-
-                    //services.AddSingleton<IAccountMQConsumer, AccountMQConsumer>();
+                    services.AddHostedService<AccountMQConsumer>();
                 })
                 .ConfigureLogging((hostContext, configLogging) =>
                 {
                     configLogging.AddConsole();
                     configLogging.AddDebug();
+                    configLogging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
                 })
                 .UseConsoleLifetime()
                 .Build();
-            Console.WriteLine("::ChatMicroservice::");
-
-
 
             await host.RunAsync();
         }

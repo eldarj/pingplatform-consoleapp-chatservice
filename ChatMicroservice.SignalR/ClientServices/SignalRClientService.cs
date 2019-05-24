@@ -1,4 +1,5 @@
-﻿using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
+﻿using ChatMicroservice.Data.Services.Interfaces;
+using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace ChatMicroservice.SignalR.ClientServices
         private readonly ILogger logger;
         private readonly IApplicationLifetime appLifetime;
 
-        private readonly HubConnection hubConnectionChat;
+        private readonly HubConnection hubConnectionAuth;
         public SignalRClientService(
             ILogger<SignalRClientService> logger,
             IApplicationLifetime applicationLifetime)
@@ -24,8 +25,8 @@ namespace ChatMicroservice.SignalR.ClientServices
             this.appLifetime = applicationLifetime;
 
             // Setup SignalR Hub connection
-            hubConnectionChat = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44380/chathub?groupName=chatMicroservice")
+            hubConnectionAuth = new HubConnectionBuilder()
+                .WithUrl("https://localhost:44380/authhub?groupName=chatMicroservice")
                 .Build();
         }
 
@@ -49,7 +50,15 @@ namespace ChatMicroservice.SignalR.ClientServices
             // Connect to hub
             try
             {
-
+                await hubConnectionAuth.StartAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        logger.LogError("-- Couln't connect to signalR ChatHub (OnStarted)");
+                        return;
+                    }
+                    logger.LogInformation("ChatMicroservice connected to ChatHub successfully (OnStarted)");
+                });
             }
             catch (Exception e)
             {

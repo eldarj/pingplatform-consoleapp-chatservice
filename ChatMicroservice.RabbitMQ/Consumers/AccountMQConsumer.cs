@@ -1,8 +1,11 @@
 ﻿using Api.DtoModels.Auth;
 using ChatMicroservice.Data.Context;
 using ChatMicroservice.Data.Models;
+using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Utils;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.MessagePatterns;
@@ -10,128 +13,104 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ChatMicroservice.RabbitMQ.Consumers
 {
-    public class AccountMQConsumer : IAccountMQConsumer
+    public class AccountMQConsumer : IHostedService, IAccountMQConsumer
     {
-
-        private static ConnectionFactory _factory;
-        private static IConnection _connection;
-        private static IModel _model;
-        private static Subscription _subscription;
-        private readonly MyDbContext dbContext;
-
-
         private readonly string ExchangeType = "fanout";
         private readonly string ExchangeName = "RegisterAccount_FanoutExchange";
         private readonly string QueueName = "ChatMicroservice_RegisterAccount_Queue";
 
-        public AccountMQConsumer(MyDbContext dbContext)
+        private static ConnectionFactory connectionFactory;
+        private static IConnection connection;
+        private static IModel channel;
+        private static EventingBasicConsumer consumer;
+
+        private readonly MyDbContext dbContext;
+        private readonly IAccountService accountService;
+        private readonly ILogger logger;
+
+        public AccountMQConsumer(MyDbContext dbContext, IAccountService accountService, ILogger<AccountMQConsumer> logger)
         {
+            this.logger = logger;
             this.dbContext = dbContext;
-            CreateConnection();
+            this.accountService = accountService;
         }
 
-        public void CreateConnection()
+        public Task StartAsync(CancellationToken cancellationToken) => CreateConnection();
+        public Task StopAsync(CancellationToken cancellationToken) => Close();
+
+        public Task CreateConnection()
         {
-            Console.WriteLine("- Creating connection to RabbitMQ...");
-            _factory = new ConnectionFactory
+            return Task.Run(() =>
             {
-                HostName = "localhost",
-                UserName = "guest",
-                Password = "guest"
-            };
-
-            _connection = _factory.CreateConnection();
-            _model = _connection.CreateModel();
-
-            _model.ExchangeDeclare(exchange: ExchangeName,
-                type: ExchangeType,
-                durable: true,
-                autoDelete: false,
-                arguments: null);
-
-            _model.QueueDeclare(queue: QueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            _model.QueueBind(queue: QueueName,
-                exchange: ExchangeName,
-                routingKey: "");
-
-            _model.BasicQos(0, 10, false);
-            _subscription = new Subscription(_model, QueueName, false);
-        }
-
-        public void Close()
-        {
-            _connection.Close();
-        }
-
-        // We could call this upon instantiating the class (within the constructor), 
-        // -- but we want to have the abillity to define the [T] param
-        // -- so, we'll call ConsumeMessages right after we register this service, in Program.cs in this case
-        public void ConsumeMessages()
-        {
-            Task.Run(async () =>
-            {
-
-                Console.WriteLine("Listening for Topic <payment.purchaseorder>");
-                Console.WriteLine("------------------------------------------");
-
-                // TODO: change this to an OnEvent listener, so we don't run it constantly - we'll trigger our consume from SignalR or something
-                while (true)
+                Console.WriteLine("- Creating connection to RabbitMQ...");
+                connectionFactory = new ConnectionFactory
                 {
-                    BasicDeliverEventArgs deliveryArguments = _subscription.Next();
+                    HostName = "localhost",
+                    UserName = "guest",
+                    Password = "guest"
+                };
 
-                    var message = (AccountDto)deliveryArguments.Body.Deserialize(typeof(AccountDto));
-                    var routingKey = deliveryArguments.RoutingKey;
+                connection = connectionFactory.CreateConnection();
+                channel = connection.CreateModel();
 
-                    Console.WriteLine("RABBITMQ INFO: [Account Registered] - Message received from exchange/queue [{0}/{1}], data: {2}",
-                        ExchangeName,
-                        QueueName,
-                        Encoding.Default.GetString(deliveryArguments.Body));
+                // Define and bind the exchange and the queue
+                channel.ExchangeDeclare(exchange: ExchangeName,
+                    type: ExchangeType,
+                    durable: true,
+                    autoDelete: false,
+                    arguments: null);
 
-                    if (await CreateNewUser(message))
-                    {
-                        _subscription.Ack(deliveryArguments);
-                    }
+                channel.QueueDeclare(queue: QueueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
 
-                }
+                channel.QueueBind(queue: QueueName,
+                    exchange: ExchangeName,
+                    routingKey: "");
+
+                // Bind a consumer with our OnDeliveryReceived handler
+                consumer = new EventingBasicConsumer(channel);
+                consumer.Received += OnDeliveryReceived;
+
+                // Start basic consuming on our channel, with auto-acknowledgement
+                channel.BasicConsume(queue: QueueName, autoAck: true, consumer: consumer);
             });
-
         }
 
-        // CREATE A DATA SERVICE THAT WILL HAVE INJECTED RABBITMQ CONSUMER
-        // AFTER INJECTION; DON't RUN THE CONSUMER, BUT WAIT FOR SIGNALR MESSAGES
-        // SO... when we get a signalr message from the API, we then go into the rabbitmq and get it
-        // otherwise, we'll geet the messages on each microservice startup aswell, so we stay up-to-date (regarding data duplication)
-        // Also, check that we always have different queuest for duplicating data, for each microservice that we have (eg. DataSpace and Chat microserv.)
-        // We use the same fanout tho - and also should define defeiniton and creation of that fanout and each queue, in each microservice.
-
-        public async Task<bool> CreateNewUser(AccountDto accountDto)
+        public async void OnDeliveryReceived(object model, BasicDeliverEventArgs delivery)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == accountDto.PhoneNumber).SingleOrDefault();
-            if (account != null) return false;
+            Console.WriteLine($"Consuming data from RabbitMQ. Exchange: {ExchangeName} - Qeueue: {QueueName}");
+            Console.WriteLine("------------------------------------------");
 
-            account = new Account
+            var messageBody = delivery.Body;
+            var accountDto = (AccountDto) messageBody.Deserialize(typeof(AccountDto));
+
+            Console.WriteLine(" [x] RABBITMQ INFO: [Account Registered] - Message received from exchange/queue [{0}/{1}], data: {2}",
+                ExchangeName,
+                QueueName,
+                Encoding.UTF8.GetString(messageBody));
+
+            if (await accountService.CreateNewUser(accountDto))
             {
-                Id = accountDto.Id,
-                PhoneNumber = accountDto.PhoneNumber,
-                Firstname = accountDto.Firstname,
-                Lastname = accountDto.Lastname,
-                AvatarImageUrl = accountDto.AvatarImageUrl
-            };
+                logger.LogInformation($"-- Account: {accountDto.PhoneNumber} added to db. ");
+            }
+            else
+            {
+                logger.LogError($"-- Couldn't add Account: {accountDto.PhoneNumber} to db. ");
+            }
+        }
 
-            dbContext.Accounts.Add(account);
-
-            await dbContext.SaveChangesAsync();
-
-            return true;
+        public Task Close()
+        {
+            connection.Close();
+            return Task.CompletedTask;
         }
     }
 }

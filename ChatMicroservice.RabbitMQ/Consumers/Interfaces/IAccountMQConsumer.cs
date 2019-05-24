@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Api.DtoModels.Auth;
+using RabbitMQ.Client.Events;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,10 +9,10 @@ namespace ChatMicroservice.RabbitMQ.Consumers.Interfaces
 {
     public interface IAccountMQConsumer
     {
-        void CreateConnection();
+        Task CreateConnection();
 
-        void Close();
+        Task Close();
 
-        void ConsumeMessages();
+        void OnDeliveryReceived(object model, BasicDeliverEventArgs delivery);
     }
 }
