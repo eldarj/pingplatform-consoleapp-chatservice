@@ -3,6 +3,7 @@ using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Ping.Commons.Dtos.Models.Auth;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,18 +16,21 @@ namespace ChatMicroservice.SignalR.ClientServices
     {
         private readonly ILogger logger;
         private readonly IApplicationLifetime appLifetime;
+        private readonly IContactService contactService;
 
-        private readonly HubConnection hubConnectionAuth;
+        private readonly HubConnection hubConnectionChat;
         public SignalRClientService(
             ILogger<SignalRClientService> logger,
-            IApplicationLifetime applicationLifetime)
+            IApplicationLifetime applicationLifetime,
+            IContactService contactService)
         {
             this.logger = logger;
+            this.contactService = contactService;
             this.appLifetime = applicationLifetime;
 
             // Setup SignalR Hub connection
-            hubConnectionAuth = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44380/authhub?groupName=chatMicroservice")
+            hubConnectionChat = new HubConnectionBuilder()
+                .WithUrl("https://localhost:44380/chathub?groupName=chatMicroservice")
                 .Build();
         }
 
@@ -50,7 +54,7 @@ namespace ChatMicroservice.SignalR.ClientServices
             // Connect to hub
             try
             {
-                await hubConnectionAuth.StartAsync().ContinueWith(t =>
+                await hubConnectionChat.StartAsync().ContinueWith(t =>
                 {
                     if (t.IsFaulted)
                     {
@@ -58,6 +62,23 @@ namespace ChatMicroservice.SignalR.ClientServices
                         return;
                     }
                     logger.LogInformation("ChatMicroservice connected to ChatHub successfully (OnStarted)");
+                });
+
+                hubConnectionChat.On<string, string>("RequestContacts", async (appId, phoneNumber) =>
+                {
+                    logger.LogInformation($"-- {appId} requesting Contacts for account: {phoneNumber}.");
+                    
+                    List<ContactDto> contacts = await contactService.GetAllByUser(phoneNumber);
+                    if (contacts != null)
+                    {
+                        logger.LogInformation($"-- Returning list of contacts.");
+                        await hubConnectionChat.SendAsync("RequestContactsSuccess", appId, contacts);
+                        return;
+                    }
+
+                    logger.LogError($"-- Request couldn't be executed - returning error message.");
+                    await hubConnectionChat.SendAsync("RequestContactsFail", appId,
+                        $"Couldn't load contacts, for account by number: {phoneNumber}, requested by: {appId}");
                 });
             }
             catch (Exception e)

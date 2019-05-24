@@ -1,6 +1,5 @@
 ﻿using Api.DtoModels.Auth;
 using ChatMicroservice.Data.Context;
-using ChatMicroservice.Data.Models;
 using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Utils;
@@ -8,10 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.MessagePatterns;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;

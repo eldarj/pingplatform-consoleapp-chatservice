@@ -28,8 +28,7 @@ namespace ChatMicroservice.Data.Services.Interfaces
                 Id = accountDto.Id,
                 Firstname = accountDto.Firstname,
                 Lastname = accountDto.Lastname,
-                PhoneNumber = accountDto.PhoneNumber,
-                AvatarImageUrl = accountDto.AvatarImageUrl
+                PhoneNumber = accountDto.PhoneNumber
             };
 
             if (accountDto.Contacts?.Count > 0)

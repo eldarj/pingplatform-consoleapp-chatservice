@@ -16,6 +16,7 @@ using Microsoft.Extensions.FileProviders;
 using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers;
 using ChatMicroservice.Data.Services.Interfaces;
+using ChatMicroservice.Data.Services;
 
 namespace ChatMicroservice
 {
@@ -48,6 +49,7 @@ namespace ChatMicroservice
                     services.AddDbContext<MyDbContext>();
 
                     services.AddScoped<IAccountService, AccountService>();
+                    services.AddScoped<IContactService, ContactService>();
 
                     services.AddHostedService<SignalRClientService>();
                     services.AddHostedService<AccountMQConsumer>();
