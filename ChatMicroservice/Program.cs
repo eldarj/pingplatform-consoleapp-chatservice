@@ -17,6 +17,8 @@ using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers;
 using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.Data.Services;
+using ChatMicroservice.RabbitMQ.Publishers;
+using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
 
 namespace ChatMicroservice
 {
@@ -50,6 +52,9 @@ namespace ChatMicroservice
 
                     services.AddScoped<IAccountService, AccountService>();
                     services.AddScoped<IContactService, ContactService>();
+                    services.AddScoped<IMessagingService, MessagingService>();
+
+                    services.AddScoped<IContactMQPublisher, ContactMQPublisher>();
 
                     services.AddHostedService<SignalRClientService>();
                     services.AddHostedService<AccountMQConsumer>();

@@ -53,6 +53,34 @@ namespace ChatMicroservice.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    DateSent = table.Column<DateTime>(nullable: false),
+                    Text = table.Column<string>(nullable: true),
+                    SenderAccountId = table.Column<int>(nullable: false),
+                    ReceiverAccountId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_Accounts_ReceiverAccountId",
+                        column: x => x.ReceiverAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Messages_Accounts_SenderAccountId",
+                        column: x => x.SenderAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_PhoneNumber",
                 table: "Accounts",
@@ -63,12 +91,25 @@ namespace ChatMicroservice.Data.Migrations
                 name: "IX_Contacts_ContactAccountId",
                 table: "Contacts",
                 column: "ContactAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ReceiverAccountId",
+                table: "Messages",
+                column: "ReceiverAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_SenderAccountId",
+                table: "Messages",
+                column: "SenderAccountId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "Contacts");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

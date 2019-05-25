@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190523212622_Init")]
+    [Migration("20190525193301_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,28 @@ namespace ChatMicroservice.Data.Migrations
                     b.ToTable("Contacts");
                 });
 
+            modelBuilder.Entity("ChatMicroservice.Data.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateSent");
+
+                    b.Property<int>("ReceiverAccountId");
+
+                    b.Property<int>("SenderAccountId");
+
+                    b.Property<string>("Text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverAccountId");
+
+                    b.HasIndex("SenderAccountId");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("ChatMicroservice.Data.Models.Contact", b =>
                 {
                     b.HasOne("ChatMicroservice.Data.Models.Account", "Account")
@@ -74,6 +96,19 @@ namespace ChatMicroservice.Data.Migrations
                     b.HasOne("ChatMicroservice.Data.Models.Account", "ContactAccount")
                         .WithMany()
                         .HasForeignKey("ContactAccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ChatMicroservice.Data.Models.Message", b =>
+                {
+                    b.HasOne("ChatMicroservice.Data.Models.Account", "ReceiverAccount")
+                        .WithMany()
+                        .HasForeignKey("ReceiverAccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ChatMicroservice.Data.Models.Account", "SenderAccount")
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
