@@ -20,7 +20,8 @@ namespace ChatMicroservice.Data.Migrations
                     DateRegistered = table.Column<DateTime>(nullable: false),
                     AvatarImageUrl = table.Column<string>(nullable: true),
                     CoverImageUrl = table.Column<string>(nullable: true),
-                    DataSpaceDirName = table.Column<string>(nullable: true)
+                    DataSpaceDirName = table.Column<string>(nullable: true),
+                    CallingCountryCode = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,7 +35,8 @@ namespace ChatMicroservice.Data.Migrations
                     AccountId = table.Column<int>(nullable: false),
                     ContactAccountId = table.Column<int>(nullable: false),
                     DateAdded = table.Column<DateTime>(nullable: false),
-                    ContactName = table.Column<string>(nullable: true)
+                    ContactName = table.Column<string>(nullable: true),
+                    IsFavorite = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {

@@ -4,6 +4,7 @@ using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ping.Commons.Dtos.Models.Auth;
 using Ping.Commons.Dtos.Models.Chat;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
@@ -87,7 +88,7 @@ namespace ChatMicroservice.SignalR.ClientServices
                         await hubConnectionChat.SendAsync("AddContactResponse", appId, response);
                         if (response.Dto != null)
                         {
-                            contactMQPublisher.SendCreatedContact(response.Dto);
+                            contactMQPublisher.SendContact(response.Dto);
                         }
                         return;
                     }
@@ -97,6 +98,23 @@ namespace ChatMicroservice.SignalR.ClientServices
                         $"Couldn't add new contact [{newContactDto.ContactPhoneNumber}], for account by number: {newContactDto.PhoneNumber}, requested by: {appId}");
                 });
 
+                hubConnectionChat.On<string, string, ContactDto>("UpdateContact", async (appId, phoneNumber, updateContactDto) =>
+                {
+                    logger.LogInformation($"-- {appId} updating contact contact [{updateContactDto.ContactPhoneNumber}] for account: {updateContactDto.PhoneNumber}.");
+
+                    ResponseDto<ContactDto> response = await contactService.UpdateContact(phoneNumber, updateContactDto);
+                    if (response != null)
+                    {
+                        if (response.Dto != null)
+                        {
+                            contactMQPublisher.SendContact(response.Dto);
+                        }
+                        return;
+                    }
+
+                    logger.LogError($"-- Request couldn't be executed - didn't update contact.");
+                });
+
                 hubConnectionChat.On<string, string>("RequestContacts", async (appId, phoneNumber) =>
                 {
                     logger.LogInformation($"-- {appId} requesting Contacts for account: {phoneNumber}.");
@@ -104,7 +122,7 @@ namespace ChatMicroservice.SignalR.ClientServices
                     List<ContactDto> contacts = await contactService.GetAllByUser(phoneNumber);
                     if (contacts != null)
                     {
-                        logger.LogInformation($"-- Returning list of contacts.");
+                        logger.LogInformation($"-- Returning list of contacts: {JsonConvert.SerializeObject(contacts)}");
                         await hubConnectionChat.SendAsync("RequestContactsSuccess", appId, contacts);
                         return;
                     }

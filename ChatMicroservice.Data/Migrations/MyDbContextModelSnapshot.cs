@@ -24,6 +24,8 @@ namespace ChatMicroservice.Data.Migrations
 
                     b.Property<string>("AvatarImageUrl");
 
+                    b.Property<int>("CallingCountryCode");
+
                     b.Property<string>("CoverImageUrl");
 
                     b.Property<string>("DataSpaceDirName");
@@ -54,6 +56,8 @@ namespace ChatMicroservice.Data.Migrations
                     b.Property<string>("ContactName");
 
                     b.Property<DateTime>("DateAdded");
+
+                    b.Property<bool>("IsFavorite");
 
                     b.HasKey("AccountId", "ContactAccountId");
 

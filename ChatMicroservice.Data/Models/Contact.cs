@@ -11,5 +11,6 @@ namespace ChatMicroservice.Data.Models
         public Account Account { get; set; }
         public int ContactAccountId { get; set; }
         public Account ContactAccount { get; set; }
+        public bool IsFavorite { get; set; } = false;
     }
 }

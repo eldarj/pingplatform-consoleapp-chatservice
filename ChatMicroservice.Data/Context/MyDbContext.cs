@@ -1,8 +1,6 @@
 ﻿using ChatMicroservice.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatMicroservice.Data.Context
 {

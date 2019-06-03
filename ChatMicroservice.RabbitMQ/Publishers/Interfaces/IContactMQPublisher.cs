@@ -10,6 +10,6 @@ namespace ChatMicroservice.RabbitMQ.Publishers.Interfaces
 
         void Close();
 
-        void SendCreatedContact<T>(T contact);
+        void SendContact<T>(T contact);
     }
 }

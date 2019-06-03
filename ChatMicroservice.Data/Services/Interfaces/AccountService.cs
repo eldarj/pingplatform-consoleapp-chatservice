@@ -28,12 +28,13 @@ namespace ChatMicroservice.Data.Services.Interfaces
                 Id = accountDto.Id,
                 Firstname = accountDto.Firstname,
                 Lastname = accountDto.Lastname,
-                PhoneNumber = accountDto.PhoneNumber
+                PhoneNumber = accountDto.PhoneNumber,
+                CallingCountryCode = accountDto.CallingCountryCode
             };
 
             if (accountDto.Contacts?.Count > 0)
             {
-                var dtoContacts = accountDto.Contacts.Select(dto => dto.PhoneNumber).ToList();
+                var dtoContacts = accountDto.Contacts.Select(dto => dto.ContactPhoneNumber).ToList();
                 List<Account> contactsToAdd = dbContext.Accounts
                     .Where(a => dtoContacts.Contains(a.PhoneNumber))
                     .ToList();
@@ -42,7 +43,7 @@ namespace ChatMicroservice.Data.Services.Interfaces
                 {
                     Account = account,
                     ContactAccountId = a.Id,
-                    ContactName = accountDto.Contacts.SingleOrDefault(c => c.PhoneNumber == a.PhoneNumber)?.ContactName
+                    ContactName = accountDto.Contacts.SingleOrDefault(c => c.ContactPhoneNumber == a.PhoneNumber)?.ContactName
                 })
                 .ToList();
             }

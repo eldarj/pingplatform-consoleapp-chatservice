@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190525193301_Init")]
+    [Migration("20190603173544_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,8 @@ namespace ChatMicroservice.Data.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("AvatarImageUrl");
+
+                    b.Property<int>("CallingCountryCode");
 
                     b.Property<string>("CoverImageUrl");
 
@@ -56,6 +58,8 @@ namespace ChatMicroservice.Data.Migrations
                     b.Property<string>("ContactName");
 
                     b.Property<DateTime>("DateAdded");
+
+                    b.Property<bool>("IsFavorite");
 
                     b.HasKey("AccountId", "ContactAccountId");
 

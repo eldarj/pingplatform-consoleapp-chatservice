@@ -56,7 +56,7 @@ namespace ChatMicroservice.RabbitMQ.Publishers
                 routingKey: "");
         }
 
-        public void SendCreatedContact<T>(T contact)
+        public void SendContact<T>(T contact)
         {
             var serializedContact = contact.Serialize();
 
@@ -65,7 +65,7 @@ namespace ChatMicroservice.RabbitMQ.Publishers
                 basicProperties: null,
                 body: serializedContact);
 
-            Console.WriteLine("RABBITMQ INFO: [Created New Contact] - Message sent to exchange-queue [{0}], data: {1}",
+            Console.WriteLine("RABBITMQ INFO: [Create/Update contact] - Message sent to exchange-queue [{0}], data: {1}",
                 ExchangeName,
                 Encoding.Default.GetString(serializedContact));
         }

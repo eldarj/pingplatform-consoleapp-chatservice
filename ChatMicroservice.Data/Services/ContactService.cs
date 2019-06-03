@@ -21,16 +21,16 @@ namespace ChatMicroservice.Data.Services
             this.dbContext = dbContext;
         }
 
-        public async Task<ResponseDto<ContactDto>> AddContact(string phoneNumber, ContactDto newContactDto)
+        public async Task<ResponseDto<ContactDto>> AddContact(string phoneNumber, ContactDto contactDto)
         {
             Account account = await dbContext.Accounts
-                .Where(a => a.PhoneNumber == newContactDto.PhoneNumber)
+                .Where(a => a.PhoneNumber == contactDto.PhoneNumber)
                 .SingleOrDefaultAsync();
 
             if (account == null) return null;
 
             Account contactAccount = await dbContext.Accounts
-                .Where(a => a.PhoneNumber == newContactDto.ContactPhoneNumber)
+                .Where(a => a.PhoneNumber == contactDto.ContactPhoneNumber)
                 .SingleOrDefaultAsync();
 
             if (contactAccount == null)
@@ -47,8 +47,8 @@ namespace ChatMicroservice.Data.Services
                 Account = account,
                 AccountId = account.Id,
                 ContactAccountId = contactAccount.Id,
-                ContactName = !String.IsNullOrWhiteSpace(newContactDto.ContactName) ?
-                    newContactDto.ContactName :
+                ContactName = !String.IsNullOrWhiteSpace(contactDto.ContactName) ?
+                    contactDto.ContactName :
                     contactAccount.Firstname + " " + contactAccount.Lastname // fix this - we receive this from the user
             };
 
@@ -65,10 +65,56 @@ namespace ChatMicroservice.Data.Services
                     ContactName = contact.ContactName,
                     ContactPhoneNumber = contact.ContactAccount.PhoneNumber,
                     AvatarImageUrl = contact.ContactAccount.AvatarImageUrl,
-                    CoverImageUrl = contact.ContactAccount.CoverImageUrl
+                    CoverImageUrl = contact.ContactAccount.CoverImageUrl,
+                    IsFavorite = contact.IsFavorite
                 },
                 Message = "New contact added successfully.",
                 MessageCode = "CONTACT_ADDED_SUCCESSFULLY"
+            };
+        }
+
+        public async Task<ResponseDto<ContactDto>> UpdateContact(string phoneNumber, ContactDto contactDto)
+        {
+            Account account = await dbContext.Accounts
+                .Where(a => a.PhoneNumber == contactDto.PhoneNumber)
+                .SingleOrDefaultAsync();
+
+            if (account == null) return null;
+
+            Contact contact = await dbContext.Contacts
+                .Where(c => c.Account.PhoneNumber == contactDto.PhoneNumber && c.ContactAccount.PhoneNumber == contactDto.ContactPhoneNumber)
+                .Include(c => c.ContactAccount)
+                .SingleOrDefaultAsync();
+
+            if (contact == null)
+            {
+                return new ResponseDto<ContactDto>
+                {
+                    Message = "It seems like this contact doesn't exist.",
+                    MessageCode = "CONTACT_DOESNT_EXIST"
+                };
+            }
+
+            contact.ContactName = contactDto.ContactName;
+            contact.IsFavorite = contactDto.IsFavorite;
+
+            await dbContext.SaveChangesAsync();
+            return new ResponseDto<ContactDto>
+            {
+                Dto = new ContactDto
+                {
+                    DateAdded = contact.DateAdded,
+                    AccountId = contact.AccountId,
+                    PhoneNumber = account.PhoneNumber,
+                    ContactAccountId = contact.ContactAccountId,
+                    ContactName = contact.ContactName,
+                    ContactPhoneNumber = contact.ContactAccount.PhoneNumber,
+                    AvatarImageUrl = contact.ContactAccount.AvatarImageUrl,
+                    CoverImageUrl = contact.ContactAccount.CoverImageUrl,
+                    IsFavorite = contact.IsFavorite
+                },
+                Message = "New contact updated successfully.",
+                MessageCode = "CONTACT_UPDATED_SUCCESSFULLY"
             };
         }
 
@@ -95,6 +141,7 @@ namespace ChatMicroservice.Data.Services
                     ContactPhoneNumber = c.ContactAccount.PhoneNumber,
                     AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
                     CoverImageUrl = c.ContactAccount.CoverImageUrl,
+                    IsFavorite = c.IsFavorite,
                     Messages = dbContext.Messages
                         .Where(m => (m.SenderAccountId == account.Id && m.ReceiverAccountId == c.ContactAccountId) ||
                             (m.SenderAccountId == c.ContactAccountId && m.ReceiverAccountId == c.AccountId))
@@ -108,6 +155,7 @@ namespace ChatMicroservice.Data.Services
                         })
                         .ToList()
                 })
+                .OrderBy(c => c.ContactName.ToLower())
                 .ToListAsync();
         }
     }
