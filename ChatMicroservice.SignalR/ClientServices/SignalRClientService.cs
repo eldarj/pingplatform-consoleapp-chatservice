@@ -1,13 +1,16 @@
 ﻿using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.RabbitMQ.Consumers.Interfaces;
 using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Ping.Commons.Dtos.Models.Auth;
 using Ping.Commons.Dtos.Models.Chat;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
+using Ping.Commons.Settings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,6 +26,8 @@ namespace ChatMicroservice.SignalR.ClientServices
         private readonly IContactService contactService;
         private readonly IMessagingService messagingService;
 
+        private readonly SecuritySettings securitySettings;
+
         private readonly HubConnection hubConnectionChat;
 
         private readonly IContactMQPublisher contactMQPublisher;
@@ -31,7 +36,8 @@ namespace ChatMicroservice.SignalR.ClientServices
             IApplicationLifetime applicationLifetime,
             IContactService contactService,
             IContactMQPublisher contactMQPublisher,
-            IMessagingService messagingService)
+            IMessagingService messagingService,
+            IOptions<SecuritySettings> securityOptions)
         {
             this.logger = logger;
             this.appLifetime = applicationLifetime;
@@ -39,11 +45,15 @@ namespace ChatMicroservice.SignalR.ClientServices
             this.contactService = contactService;
             this.messagingService = messagingService;
 
+            this.securitySettings = securityOptions.Value;
+
             this.contactMQPublisher = contactMQPublisher;
 
             // Setup SignalR Hub connection
             hubConnectionChat = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44380/chathub?groupName=chatMicroservice")
+                .WithUrl("https://localhost:44380/chathub",
+                    options => options.AccessTokenProvider = () => 
+                        Task.FromResult<string>(JWTokenHandler.GenerateToken(securitySettings.ClientIdentifier, securitySettings.Secret)))
                 .Build();
         }
 
@@ -115,21 +125,21 @@ namespace ChatMicroservice.SignalR.ClientServices
                     logger.LogError($"-- Request couldn't be executed - didn't update contact.");
                 });
 
-                hubConnectionChat.On<string, string>("RequestContacts", async (appId, phoneNumber) =>
+                hubConnectionChat.On<string>("RequestContacts", async (phoneNumber) =>
                 {
-                    logger.LogInformation($"-- {appId} requesting Contacts for account: {phoneNumber}.");
+                    logger.LogInformation($"-- requesting Contacts for account: {phoneNumber}.");
                     
                     List<ContactDto> contacts = await contactService.GetAllByUser(phoneNumber);
                     if (contacts != null)
                     {
                         logger.LogInformation($"-- Returning list of contacts: {JsonConvert.SerializeObject(contacts)}");
-                        await hubConnectionChat.SendAsync("RequestContactsSuccess", appId, contacts);
+                        await hubConnectionChat.SendAsync("RequestContactsSuccess", phoneNumber, contacts);
                         return;
                     }
 
                     logger.LogError($"-- Request couldn't be executed - returning error message.");
-                    await hubConnectionChat.SendAsync("RequestContactsFail", appId,
-                        $"Couldn't load contacts, for account by number: {phoneNumber}, requested by: {appId}");
+                    await hubConnectionChat.SendAsync("RequestContactsFail", phoneNumber,
+                        $"Couldn't load contacts, for account by number: {phoneNumber}, requested by: {phoneNumber}");
                 });
 
                 hubConnectionChat.On<MessageDto>("SendMessage", async (newMessageDto) =>

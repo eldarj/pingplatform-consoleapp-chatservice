@@ -19,6 +19,7 @@ using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.Data.Services;
 using ChatMicroservice.RabbitMQ.Publishers;
 using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
+using Ping.Commons.Settings;
 
 namespace ChatMicroservice
 {
@@ -49,6 +50,10 @@ namespace ChatMicroservice
                     //        b.MigrationsAssembly("AccountMicroservice.Data"))
                     //);
                     services.AddDbContext<MyDbContext>();
+
+                    // Jwt authentication// configure strongly typed settings objects
+                    var appSettingsSection = hostContext.Configuration.GetSection("SecuritySettings");
+                    services.Configure<SecuritySettings>(appSettingsSection);
 
                     services.AddScoped<IAccountService, AccountService>();
                     services.AddScoped<IContactService, ContactService>();

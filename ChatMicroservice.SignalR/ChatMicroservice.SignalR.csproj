@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\api\api-gateway\Ping.Commons.Settings\Ping.Commons.Settings.csproj" />
     <ProjectReference Include="..\ChatMicroservice.RabbitMQ\ChatMicroservice.RabbitMQ.csproj" />
   </ItemGroup>
 

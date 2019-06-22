@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\api\api-gateway\Ping.Commons.Dtos\Ping.Commons.Dtos.csproj" />
+    <ProjectReference Include="..\..\..\api\api-gateway\Ping.Commons.Settings\Ping.Commons.Settings.csproj" />
     <ProjectReference Include="..\ChatMicroservice.Data\ChatMicroservice.Data.csproj" />
     <ProjectReference Include="..\ChatMicroservice.RabbitMQ\ChatMicroservice.RabbitMQ.csproj" />
     <ProjectReference Include="..\ChatMicroservice.SignalR\ChatMicroservice.SignalR.csproj" />
