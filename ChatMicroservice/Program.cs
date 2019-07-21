@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ChatMicroservice.Data.Context;
 
-using ChatMicroservice.SignalR.ClientServices;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +18,9 @@ using ChatMicroservice.Data.Services;
 using ChatMicroservice.RabbitMQ.Publishers;
 using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
 using Ping.Commons.Settings;
+using ChatMicroservice.HostedServices;
+using ChatMicroservice.SignalRServices.Interfaces;
+using ChatMicroservice.SignalRServices;
 
 namespace ChatMicroservice
 {
@@ -52,17 +53,19 @@ namespace ChatMicroservice
                     services.AddDbContext<MyDbContext>();
 
                     // Jwt authentication// configure strongly typed settings objects
-                    var appSettingsSection = hostContext.Configuration.GetSection("SecuritySettings");
-                    services.Configure<SecuritySettings>(appSettingsSection);
+                    services.Configure<SecuritySettings>(hostContext.Configuration.GetSection("SecuritySettings"));
+                    services.Configure<GatewayBaseSettings>(hostContext.Configuration.GetSection("GatewayBaseSettings"));
+
+                    services.AddHostedService<ConsoleHostedService>();
+                    services.AddHostedService<AccountMQConsumer>();
 
                     services.AddScoped<IAccountService, AccountService>();
                     services.AddScoped<IContactService, ContactService>();
                     services.AddScoped<IMessagingService, MessagingService>();
 
-                    services.AddScoped<IContactMQPublisher, ContactMQPublisher>();
+                    services.AddScoped<IChatHubClientService, ChatHubClientService>();
 
-                    services.AddHostedService<SignalRClientService>();
-                    services.AddHostedService<AccountMQConsumer>();
+                    services.AddScoped<IContactMQPublisher, ContactMQPublisher>();
                 })
                 .ConfigureLogging((hostContext, configLogging) =>
                 {
