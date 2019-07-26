@@ -59,15 +59,15 @@ namespace ChatMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
-            hubConnection.On<string, string, ContactDto>("AddContact", async (appIdentifier, phoneNumber, newContactDto) =>
+            hubConnection.On<string, ContactDto>("AddContact", async (phoneNumber, newContactDto) =>
             {
-                logger.LogInformation($"[{appIdentifier}] - requesting to add new contact [{newContactDto.ContactPhoneNumber}] within account {phoneNumber}.");
+                logger.LogInformation($"[{phoneNumber}] - requesting to add new contact {newContactDto.ContactPhoneNumber}.");
 
                 ResponseDto<ContactDto> response = await contactService.AddContact(phoneNumber, newContactDto);
                 if (response != null)
                 {
-                    logger.LogError($"[{appIdentifier}] - added new contact (Success) {newContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
-                    await hubConnection.SendAsync("AddContactResponse", appIdentifier, response);
+                    logger.LogError($"[{phoneNumber}] - added new contact (Success) {newContactDto.ContactPhoneNumber}.");
+                    await hubConnection.SendAsync("AddContactResponse", phoneNumber, response);
                     if (response.Dto != null)
                     {
                         contactMQPublisher.SendContact(response.Dto);
@@ -75,28 +75,28 @@ namespace ChatMicroservice.SignalRServices
                     return;
                 }
 
-                logger.LogError($"[{appIdentifier}] - couldn't add new contact (Fail) {newContactDto.ContactPhoneNumber} within account [{phoneNumber}]. " +
+                logger.LogError($"[{phoneNumber}] - couldn't add new contact (Fail) {newContactDto.ContactPhoneNumber} within account [{phoneNumber}]. " +
                     $"Returning error message");
-                await hubConnection.SendAsync("AddContactFail", appIdentifier,
-                    $"Couldn't add new contact [{newContactDto.ContactPhoneNumber}], for account by number: {phoneNumber}, requested by: {appIdentifier}");
+                await hubConnection.SendAsync("AddContactFail", phoneNumber,
+                    $"Couldn't add new contact [{newContactDto.ContactPhoneNumber}], for account by number: {phoneNumber}, requested by: {phoneNumber}");
             });
 
-            hubConnection.On<string, string, ContactDto>("UpdateContact", async (appIdentifier, phoneNumber, updateContactDto) =>
+            hubConnection.On<string, ContactDto>("UpdateContact", async (phoneNumber, updateContactDto) =>
             {
-                logger.LogError($"[{appIdentifier}] - requesting contact update {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
+                logger.LogError($"[{phoneNumber}] - requesting contact update {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
 
                 ResponseDto<ContactDto> response = await contactService.UpdateContact(phoneNumber, updateContactDto);
                 if (response != null)
                 {
                     if (response.Dto != null)
                     {
-                        logger.LogError($"[{appIdentifier}] - updated contact (Success) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
+                        logger.LogError($"[{phoneNumber}] - updated contact (Success) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
                         contactMQPublisher.SendContact(response.Dto);
                     }
                     return;
                 }
 
-                logger.LogError($"[{appIdentifier}] - couldn't update contact (Fail) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
+                logger.LogError($"[{phoneNumber}] - couldn't update contact (Fail) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
             });
 
             hubConnection.On<string>("RequestContacts", async (phoneNumber) =>
