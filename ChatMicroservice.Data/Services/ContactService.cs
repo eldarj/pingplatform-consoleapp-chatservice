@@ -37,6 +37,7 @@ namespace ChatMicroservice.Data.Services
             {
                 return new ResponseDto<ContactDto>
                 {
+                    Success = false,
                     Message = "It seems like this contact isn't a Ping user.",
                     MessageCode = "CONTACT_DOESNT_EXIST"
                 };
@@ -54,6 +55,7 @@ namespace ChatMicroservice.Data.Services
 
             dbContext.Contacts.Add(contact);
             await dbContext.SaveChangesAsync();
+
             return new ResponseDto<ContactDto>
             {
                 Dto = new ContactDto
@@ -68,6 +70,7 @@ namespace ChatMicroservice.Data.Services
                     CoverImageUrl = contact.ContactAccount.CoverImageUrl,
                     IsFavorite = contact.IsFavorite
                 },
+                Success = true,
                 Message = "New contact added successfully.",
                 MessageCode = "CONTACT_ADDED_SUCCESSFULLY"
             };
@@ -90,6 +93,7 @@ namespace ChatMicroservice.Data.Services
             {
                 return new ResponseDto<ContactDto>
                 {
+                    Success = false,
                     Message = "It seems like this contact doesn't exist.",
                     MessageCode = "CONTACT_DOESNT_EXIST"
                 };
@@ -113,6 +117,7 @@ namespace ChatMicroservice.Data.Services
                     CoverImageUrl = contact.ContactAccount.CoverImageUrl,
                     IsFavorite = contact.IsFavorite
                 },
+                Success = true,
                 Message = "New contact updated successfully.",
                 MessageCode = "CONTACT_UPDATED_SUCCESSFULLY"
             };

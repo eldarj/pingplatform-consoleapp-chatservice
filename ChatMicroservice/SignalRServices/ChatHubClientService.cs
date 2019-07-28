@@ -64,21 +64,18 @@ namespace ChatMicroservice.SignalRServices
                 logger.LogInformation($"[{phoneNumber}] - requesting to add new contact {newContactDto.ContactPhoneNumber}.");
 
                 ResponseDto<ContactDto> response = await contactService.AddContact(phoneNumber, newContactDto);
-                if (response != null)
+                if (response != null && response.Success)
                 {
-                    logger.LogError($"[{phoneNumber}] - added new contact (Success) {newContactDto.ContactPhoneNumber}.");
-                    await hubConnection.SendAsync("AddContactResponse", phoneNumber, response);
-                    if (response.Dto != null)
-                    {
-                        contactMQPublisher.SendContact(response.Dto);
-                    }
-                    return;
+                    logger.LogInformation($"[{phoneNumber}] - added new contact (Success) {newContactDto.ContactPhoneNumber}.");
+                    contactMQPublisher.SendContact(response.Dto);
+                }
+                else
+                {
+                    logger.LogError($"[{phoneNumber}] - couldn't add new contact (Fail) {newContactDto.ContactPhoneNumber} within account [{phoneNumber}]. " +
+                        $"Returning error message");
                 }
 
-                logger.LogError($"[{phoneNumber}] - couldn't add new contact (Fail) {newContactDto.ContactPhoneNumber} within account [{phoneNumber}]. " +
-                    $"Returning error message");
-                await hubConnection.SendAsync("AddContactFail", phoneNumber,
-                    $"Couldn't add new contact [{newContactDto.ContactPhoneNumber}], for account by number: {phoneNumber}, requested by: {phoneNumber}");
+                await hubConnection.SendAsync("AddContactResponse", phoneNumber, response);
             });
 
             hubConnection.On<string, ContactDto>("UpdateContact", async (phoneNumber, updateContactDto) =>
@@ -86,17 +83,17 @@ namespace ChatMicroservice.SignalRServices
                 logger.LogError($"[{phoneNumber}] - requesting contact update {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
 
                 ResponseDto<ContactDto> response = await contactService.UpdateContact(phoneNumber, updateContactDto);
-                if (response != null)
+                if (response != null && response.Success)
                 {
-                    if (response.Dto != null)
-                    {
-                        logger.LogError($"[{phoneNumber}] - updated contact (Success) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
-                        contactMQPublisher.SendContact(response.Dto);
-                    }
-                    return;
+                    logger.LogError($"[{phoneNumber}] - updated contact (Success) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
+                    contactMQPublisher.SendContact(response.Dto);
+                }
+                else
+                {
+                    logger.LogError($"[{phoneNumber}] - couldn't update contact (Fail) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
                 }
 
-                logger.LogError($"[{phoneNumber}] - couldn't update contact (Fail) {updateContactDto.ContactPhoneNumber} within account [{phoneNumber}].");
+                await hubConnection.SendAsync("UpdateContactResponse", phoneNumber, response);
             });
 
             hubConnection.On<string>("RequestContacts", async (phoneNumber) =>

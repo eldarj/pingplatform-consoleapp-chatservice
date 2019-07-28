@@ -12,6 +12,8 @@ namespace ChatMicroservice.Data.Context
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<EmojiCategory> EmojiCategories { get; set; }
+        public DbSet<Emoji> Emojis { get; set; }
         #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
