@@ -1,13 +1,14 @@
 ﻿using Api.DtoModels.Auth;
 using ChatMicroservice.Data.Context;
 using ChatMicroservice.Data.Models;
+using ChatMicroservice.Data.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatMicroservice.Data.Services.Interfaces
+namespace ChatMicroservice.Data.Services
 {
     public class AccountService : IAccountService
     {

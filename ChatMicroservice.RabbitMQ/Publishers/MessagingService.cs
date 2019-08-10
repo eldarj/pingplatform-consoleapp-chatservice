@@ -37,6 +37,7 @@ namespace ChatMicroservice.RabbitMQ.Publishers
             {
                 SenderAccountId = sender.Id,
                 ReceiverAccountId = receiver.Id,
+                //DateSent = new DateTime(newMessageDto.Ticks),
                 Text = newMessageDto.Text
             };
 

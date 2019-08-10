@@ -59,6 +59,7 @@ namespace ChatMicroservice
                     services.AddHostedService<ConsoleHostedService>();
                     services.AddHostedService<AccountMQConsumer>();
 
+                    services.AddScoped<IEmojiService, EmojiService>();
                     services.AddScoped<IAccountService, AccountService>();
                     services.AddScoped<IContactService, ContactService>();
                     services.AddScoped<IMessagingService, MessagingService>();

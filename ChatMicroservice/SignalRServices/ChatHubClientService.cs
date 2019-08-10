@@ -15,6 +15,7 @@ using ChatMicroservice.Data.Services.Interfaces;
 using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
 using Newtonsoft.Json;
 using Ping.Commons.Dtos.Models.Chat;
+using Ping.Commons.Dtos.Models.Emojis;
 
 namespace ChatMicroservice.SignalRServices
 {
@@ -25,12 +26,14 @@ namespace ChatMicroservice.SignalRServices
         private readonly ILogger logger;
         private readonly IContactService contactService;
         private readonly IMessagingService messagingService;
+        private readonly IEmojiService emojiService;
         private readonly IContactMQPublisher contactMQPublisher;
 
         public ChatHubClientService(IOptions<GatewayBaseSettings> gatewayBaseOptions,
             IOptions<SecuritySettings> securityOptions,
             IContactService contactService,
             IMessagingService messagingService,
+            IEmojiService emojiService,
             IContactMQPublisher contactMQPublisher,
             ILogger<ChatHubClientService> logger)
             : base(gatewayBaseOptions, securityOptions, HUB_ENDPOINT)
@@ -39,6 +42,7 @@ namespace ChatMicroservice.SignalRServices
 
             this.contactMQPublisher = contactMQPublisher;
 
+            this.emojiService = emojiService;
             this.contactService = contactService;
             this.messagingService = messagingService;
         }
@@ -59,6 +63,40 @@ namespace ChatMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
+            hubConnection.On<string>("GetEmojis", async (phoneNumber) => 
+            {
+                logger.LogInformation($"[{phoneNumber}] - requesting Emojis.");
+
+                //List<EmojiCategoryDto> emojis = new List<EmojiCategoryDto> { 
+                //    new EmojiCategoryDto
+                //    {
+                //        Name = "Category1",
+                //        Emojis = new List<EmojiDto>
+                //        {
+                //            new EmojiDto
+                //            {
+                //                Category = "Category1",
+                //                Decimal = "15",
+                //                Hex = "0x1F600",
+                //                Name = "smiley",
+                //                Unicode = "15921"
+                //            },
+                //            new EmojiDto
+                //            {
+                //                Category = "Category1",
+                //                Decimal = "16",
+                //                Hex = "0x1F604",
+                //                Name = "smiley2",
+                //                Unicode = "2159195"
+                //            }
+                //        }
+                //    }
+                //};
+                List<EmojiCategoryDto> emojis = await emojiService.GetEmojis();
+
+                await hubConnection.SendAsync("EmojisResponse", phoneNumber, emojis);
+            });
+
             hubConnection.On<string, ContactDto>("AddContact", async (phoneNumber, newContactDto) =>
             {
                 logger.LogInformation($"[{phoneNumber}] - requesting to add new contact {newContactDto.ContactPhoneNumber}.");
