@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190728170108_EmojisEmojiCategories")]
-    partial class EmojisEmojiCategories
+    [Migration("20190812141337_Emojis")]
+    partial class Emojis
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -73,15 +73,13 @@ namespace ChatMicroservice.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Decimal");
-
                     b.Property<int>("EmojiCategoryId");
 
-                    b.Property<string>("Hex");
+                    b.Property<string>("HexCodePoint");
 
                     b.Property<string>("Name");
 
-                    b.Property<string>("Unicode");
+                    b.Property<string>("Shortcode");
 
                     b.HasKey("Id");
 

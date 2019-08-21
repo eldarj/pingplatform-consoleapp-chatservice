@@ -71,15 +71,13 @@ namespace ChatMicroservice.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Decimal");
-
                     b.Property<int>("EmojiCategoryId");
 
-                    b.Property<string>("Hex");
+                    b.Property<string>("HexCodePoint");
 
                     b.Property<string>("Name");
 
-                    b.Property<string>("Unicode");
+                    b.Property<string>("Shortcode");
 
                     b.HasKey("Id");
 

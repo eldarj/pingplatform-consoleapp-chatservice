@@ -28,9 +28,8 @@ namespace ChatMicroservice.Data.Services
                 {
                     Category = emojiCategory.Name,
                     Name = emoji.Name,
-                    Decimal = emoji.Decimal,
-                    Hex = emoji.Hex,
-                    Unicode = emoji.Unicode
+                    Shortcode = emoji.Shortcode,
+                    HexCodePoint = emoji.HexCodePoint,
                 })
                 .ToList()
             })

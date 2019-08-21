@@ -43,6 +43,8 @@ namespace ChatMicroservice.RabbitMQ.Publishers
 
             dbContext.Messages.Add(message);
             await dbContext.SaveChangesAsync();
+
+            Message msg = message;
             return true;
         }
     }

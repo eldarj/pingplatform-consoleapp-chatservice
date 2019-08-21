@@ -9,9 +9,8 @@ namespace ChatMicroservice.Data.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Decimal { get; set; }
-        public string Unicode { get; set; }
-        public string Hex { get; set; }
+        public string Shortcode { get; set; }
+        public string HexCodePoint { get; set; }
 
         [ForeignKey("EmojiCategory")]
         public int EmojiCategoryId { get; set; }

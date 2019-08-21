@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ChatMicroservice.Data.Migrations
 {
-    public partial class EmojisEmojiCategories : Migration
+    public partial class Emojis : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -27,9 +27,8 @@ namespace ChatMicroservice.Data.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true),
-                    Decimal = table.Column<string>(nullable: true),
-                    Unicode = table.Column<string>(nullable: true),
-                    Hex = table.Column<string>(nullable: true),
+                    Shortcode = table.Column<string>(nullable: true),
+                    HexCodePoint = table.Column<string>(nullable: true),
                     EmojiCategoryId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
