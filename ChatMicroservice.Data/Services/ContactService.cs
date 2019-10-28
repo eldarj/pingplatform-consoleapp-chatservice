@@ -4,6 +4,7 @@ using ChatMicroservice.Data.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Ping.Commons.Dtos.Models.Auth;
 using Ping.Commons.Dtos.Models.Chat;
+using Ping.Commons.Dtos.Models.Various;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
 using System;
 using System.Collections.Generic;
@@ -147,18 +148,27 @@ namespace ChatMicroservice.Data.Services
                     AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
                     CoverImageUrl = c.ContactAccount.CoverImageUrl,
                     IsFavorite = c.IsFavorite,
-                    Messages = dbContext.Messages
-                        .Where(m => (m.SenderAccountId == account.Id && m.ReceiverAccountId == c.ContactAccountId) ||
-                            (m.SenderAccountId == c.ContactAccountId && m.ReceiverAccountId == c.AccountId))
-                        .OrderByDescending(m => m.DateSent)
-                        .Select(m => new MessageDto
-                        {
-                            Sender = m.SenderAccount.PhoneNumber,
-                            Receiver = m.ReceiverAccount.PhoneNumber,
-                            Text = m.Text,
-                            Ticks = m.DateSent.Ticks
-                        })
-                        .ToList()
+                    Messages = new PagedList<MessageDto>
+                    {
+                        PageSize = 3,
+                        Total = dbContext.Messages
+                            .Where(m => (m.SenderAccountId == account.Id && m.ReceiverAccountId == c.ContactAccountId) ||
+                                (m.SenderAccountId == c.ContactAccountId && m.ReceiverAccountId == c.AccountId))
+                            .Count(),
+                        Items = dbContext.Messages
+                            .Where(m => (m.SenderAccountId == account.Id && m.ReceiverAccountId == c.ContactAccountId) ||
+                                (m.SenderAccountId == c.ContactAccountId && m.ReceiverAccountId == c.AccountId))
+                            .OrderByDescending(m => m.DateSent)
+                            .Select(m => new MessageDto
+                            {
+                                Sender = m.SenderAccount.PhoneNumber,
+                                Receiver = m.ReceiverAccount.PhoneNumber,
+                                Text = m.Text,
+                                Ticks = m.DateSent.Ticks
+                            })
+                            .Take(3)
+                            .ToList()
+                    }
                 })
                 .OrderBy(c => c.ContactName.ToLower())
                 .ToListAsync();

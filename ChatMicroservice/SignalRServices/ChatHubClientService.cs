@@ -16,6 +16,7 @@ using ChatMicroservice.RabbitMQ.Publishers.Interfaces;
 using Newtonsoft.Json;
 using Ping.Commons.Dtos.Models.Chat;
 using Ping.Commons.Dtos.Models.Emojis;
+using Ping.Commons.Dtos.Models.Various;
 
 namespace ChatMicroservice.SignalRServices
 {
@@ -149,6 +150,23 @@ namespace ChatMicroservice.SignalRServices
                 logger.LogError($"[{phoneNumber}] - contacts couldn't be retrieved (Fail). Returning error message");
                 await hubConnection.SendAsync("RequestContactsFail", phoneNumber,
                     $"Couldn't load contacts, for account: {phoneNumber}, requested by: {phoneNumber}");
+            });
+
+            hubConnection.On<string, int>("LoadMessages", async (phoneNumber, pageNumber) =>
+            {
+                logger.LogInformation($"[{phoneNumber}] requesting more messages, page: {pageNumber}.");
+
+                //PagedList<MessageDto> pagedMessages = await contactService.GetMessages(pageNumber);
+                //if (pagedMessages != null)
+                //{
+                //    logger.LogInformation($"[{phoneNumber}] - returning page {pageNumber} of messages (Success): {JsonConvert.SerializeObject(pagedMessages)}");
+                //    await hubConnection.SendAsync("LoadMessagesSuccess", phoneNumber, pagedMessages);
+                //    return;
+                //}
+
+                //logger.LogError($"[{phoneNumber}] - page {pageNumber} of messages couldn't be retrieved (Fail). Returning error message");
+                //await hubConnection.SendAsync("LoadMessagesFail", phoneNumber,
+                //    $"Couldn't load page {pageNumber} of messages, for account: {phoneNumber}, requested by: {phoneNumber}");
             });
 
             hubConnection.On<MessageDto>("SendMessage", async (newMessageDto) =>

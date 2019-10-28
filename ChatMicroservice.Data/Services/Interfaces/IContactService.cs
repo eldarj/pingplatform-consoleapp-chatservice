@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Chat;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
 
 namespace ChatMicroservice.Data.Services.Interfaces
